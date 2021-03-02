@@ -1,13 +1,33 @@
 import cv2 as cv
+import numpy as np
+import face_recognition
+import pickle
 """@package Project 3
 This module is the resolution of Project 3 from Biometria classes.
-It's been developed by Tiago Lucas from the MsC in Cibersecurity.
+It's been developed by Tiago Lucas from the MSc in Cibersecurity.
 """
 
 
 def auth_check(x, y, width, height, frame):
     auth = False
     name = "Unknown"
+
+    img = frame[y:y+height, x:x+width]
+    for size in img.shape[:2]:
+        if size < 20:
+            return
+
+    blob = cv.dnn.blobFromImage(img, 1.0 / 255, (96, 96), (0, 0, 0), swapRB=True, crop=False)
+    embedder.setInput(blob)
+    vec = embedder.forward()
+
+    preds = recognizer.predict_proba(vec)[0]
+    j = np.argmax(preds)
+    proba = preds[j]
+    if proba > 50:
+        name = le.classes_[j]
+        auth = True
+
     return auth, name
 
 
@@ -33,6 +53,7 @@ def main():
             minNeighbors=5,
             minSize=(10, 10)
         )
+        pickle.loads()
         for (x, y, w, h) in faces:
             ret, name = auth_check(x, y, w, h, frame)
             color = (0, 255, 0) if ret else (0, 0, 255)
